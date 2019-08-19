@@ -4456,44 +4456,6 @@ class AllenBradleyHelper:
 
 		return buffer[0:len(offect)]
 	
-# NetSimplifyClient类
-class NetSimplifyClient(NetworkDoubleBase):
-	'''异步访问数据的客户端类，用于向服务器请求一些确定的数据信息'''
-	def __init__(self, ipAddress, port):
-		'''实例化一个客户端的对象，用于和服务器通信'''
-		self.iNetMessage = HslMessage()
-		self.byteTransform = RegularByteTransform()
-		self.ipAddress = ipAddress
-		self.port = port
-
-	def ReadFromServer( self, customer, send = None):
-		'''客户端向服务器进行请求，请求数据，类型取决于你的send的类型'''
-		if send == None: return
-		if type(send) == str:
-			read = self.__ReadFromServerBase(  HslProtocol.CommandString( customer, self.Token, send))
-			if read.IsSuccess == False:
-				return OperateResult.CreateFailedResult( read )
-			
-			return OperateResult.CreateSuccessResult( read.Content.decode('utf-16') )
-		else:
-			return self.__ReadFromServerBase( HslProtocol.CommandBytes( customer, self.Token, send))
-
-	def __ReadFromServerBase( self, send):
-		'''需要发送的底层数据'''
-		read = self.ReadFromCoreServer( send )
-		if read.IsSuccess == False:
-			return read
-
-		headBytes = bytearray(HslProtocol.HeadByteLength())
-		contentBytes = bytearray(len(read.Content) - HslProtocol.HeadByteLength())
-
-		headBytes[0:HslProtocol.HeadByteLength()] = read.Content[0:HslProtocol.HeadByteLength()]
-		if len(contentBytes) > 0:
-			contentBytes[0:len(contentBytes)] = read.Content[HslProtocol.HeadByteLength():len(read.Content)]
-
-		contentBytes = HslProtocol.CommandAnalysis( headBytes, contentBytes )
-		return OperateResult.CreateSuccessResult( contentBytes )
-
 
 class AppSession:
 	'''网络会话信息'''
